@@ -1,0 +1,40 @@
+.link-wrapper:not(:last-child):after {
+    content: "";
+    border-top: 1px solid black;
+    display: block;
+}
+
+.list-item {
+    display: block;
+    width: 100%;
+    color: black;
+    text-decoration: none;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.list-item-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item-badge {
+    margin-right: 1em;
+}
+
+.list-item-name {
+    max-width: 70%;
+    overflow: hidden;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:root {
+    --bd-rad: 6px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
