@@ -73,16 +73,16 @@ export default function App() {
 
 		function initDplayer() {
 			dp.video.currentTime = localStorage.getItem(episode()) ?? 0;
-			dp.on("timeupdate", async () => {
+			dp.video.ontimeupdate = async () => {
 				if (dp.video.currentTime)
 					localStorage.setItem(episode(), dp.video.currentTime);
-			});
-			dp.on("ended", async () => {
+			};
+			dp.video.onended = async () => {
 				localStorage.removeItem(episode());
 				dp.video.currentTime = 0;
 				const nextVideo = getNextVideo();
 				if (nextVideo) setEpisode(nextVideo);
-			});
+			};
 			createEffect(() => {
 				dp.switchVideo({
 					url: `/video/${path}/${encodeURI(episode())}`,
