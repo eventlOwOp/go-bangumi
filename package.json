@@ -19,6 +19,7 @@
     "mime": "^3.0.0",
     "range-parser": "^1.2.1",
     "rss-parser": "^3.13.0",
+    "wasm-opencc": "^1.0.2",
     "webtorrent": "^2.1.22"
   }
 }

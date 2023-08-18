@@ -7,13 +7,17 @@
     "dev": "vite",
     "watch": "vite build --watch",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && deploy.bat"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@solidjs/router": "^0.8.3",
     "axios": "^1.4.0",
+    "bootstrap": "^5.3.1",
     "dplayer": "^1.27.1",
     "moment": "^2.29.4",
+    "sass": "^1.65.1",
     "solid-js": "^1.7.8",
     "sweetalert2": "^11.7.22"
   },

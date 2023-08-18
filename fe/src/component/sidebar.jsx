@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import "./sidebar.css";
+import "../css/sidebar.scss";
 export default function Sidebar(props) {
 	const [video, setVideo] = props.videoSignal;
 	return (

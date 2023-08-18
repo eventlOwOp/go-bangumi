@@ -4,9 +4,21 @@ export const axiosProxy = {
 	host: "localhost",
 	port: 1080,
 };
-export const browseSource =
-	"https://share.dmhy.org/topics/rss/team_id/816/rss.xml"; // ANi
-// export const browseSource = "https://acg.rip/team/173.xml"; //ANi
+export const torrentClientConfig = {
+	maxConns: 40960,
+	// uploadLimit: 0,
+	// downloadLimit: 1024 * 1024 * 4,
+};
+export const sources = {
+	search: (s, i, sub = 0) =>
+		`https://share.dmhy.org/topics/rss/rss.xml?keyword=${encodeURIComponent(
+			s
+		)}&sort_id=0&team_id=${sources.subId[sub]}&order=date-desc`,
+	browse: (i, sub = 0) =>
+		`https://share.dmhy.org/topics/rss/team_id/${sources.subId[sub]}/rss.xml`,
+	subNames: ["ANi", "Lilith-Raws", "NC-Raws", "桜都字幕组", "LoliHouse"],
+	subId: [816, 803, 801, 619, 657],
+};
 export const announceList = [
 	"http://tracker.gbitt.info/announce",
 	"udp://tracker.opentrackr.org:1337/announce",

@@ -4,6 +4,7 @@ import { useLocation } from "@solidjs/router";
 import Swal from "sweetalert2";
 import axios from "axios";
 import moment from "moment";
+import { Popover } from "bootstrap";
 
 function escapeName(name) {
 	name.replaceAll(/[\\|\/|\:|\*|\?|\||"|<|>]/g, "");
@@ -13,17 +14,15 @@ function escapeName(name) {
 }
 
 function enablePopover() {
-	const popoverTriggerList = document.querySelectorAll(
-		'[data-bs-toggle="popover"]'
-	);
-	const popoverList = [...popoverTriggerList].map(
-		(popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl)
-	);
+	document
+		.querySelectorAll('[data-bs-toggle="popover"]')
+		.forEach((u) => new Popover(u));
 }
 
 function getTimeString(d) {
-	if (d.year() === new Date().getFullYear()) return d.format("MM/DD hh:mm");
-	return d.format("YY/MM/DD hh:mm");
+	d = moment(d);
+	if (d.year() === new Date().getFullYear()) return d.format("MM/DD kk:mm");
+	return d.format("YY/MM/DD kk:mm");
 }
 
 export default function Add() {
@@ -53,7 +52,7 @@ export default function Add() {
 	}
 
 	(function getSpeed() {
-		axios.get("/speed").then((u) => {
+		axios.get("/add/speed").then((u) => {
 			setSpeed(u.data);
 		});
 		setTimeout(getSpeed, 2000);
@@ -75,11 +74,12 @@ export default function Add() {
 				<div class="col-md-4 col-sm-8">
 					<MagnetInput
 						resolve={async (u) => {
-							axios.post("/add/torrent", u);
-							Swal.fire({
-								icon: "success",
-								title: "Whooray",
-								text: "已经开始下载力~",
+							axios.post("/add/torrent", u).then(() => {
+								Swal.fire({
+									icon: "success",
+									title: "Whooray",
+									text: "已经开始下载力~",
+								});
 							});
 						}}
 					/>
@@ -117,15 +117,18 @@ export default function Add() {
 									<div
 										class="list-item list-item-flex"
 										on:click={() => {
-											axios.post("/add/torrent", {
-												i: u.enclosure.url,
-												name: escapeName(u.name),
-											});
-											Swal.fire({
-												icon: "success",
-												title: "Whooray",
-												text: "已经开始下载力~",
-											});
+											axios
+												.post("/add/torrent", {
+													i: u.enclosure.url,
+													name: escapeName(u.name),
+												})
+												.then(() => {
+													Swal.fire({
+														icon: "success",
+														title: "Whooray",
+														text: "已经开始下载力~",
+													});
+												});
 										}}
 										data-bs-toggle="popover"
 										data-bs-trigger="hover focus"
@@ -137,7 +140,7 @@ export default function Add() {
 												{u.episode}
 											</span>
 											<span class="badge bg-info list-item-badge">
-												{u.pubDate ? getTimeString(moment(u.pubDate)) : "~"}
+												{u.pubDate ? getTimeString(u.pubDate) : "~"}
 											</span>
 										</div>
 									</div>

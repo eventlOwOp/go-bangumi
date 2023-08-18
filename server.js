@@ -11,66 +11,18 @@ const app = fastify({
 });
 
 import danmakuRoute from "./route/danmaku.js";
+import addTorrentRoute, { downloading } from "./route/addTorrent.js";
 
 import fs from "fs";
 import path from "path";
 import mime from "mime";
 import parseRange from "range-parser";
-import WebTorrent from "webtorrent";
-import events from "events";
 import axios from "axios";
 import getFiles from "./lib/getFiles.js";
-import parseTitle from "./lib/parser.js";
-import RssParser from "rss-parser";
-const rssParser = new RssParser();
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 
-import {
-	rootPath,
-	axiosProxy,
-	announceList,
-	extMatcher,
-	browseSource,
-} from "./config.js";
-
-const client = new WebTorrent({
-	maxConns: 40960,
-	// uploadLimit: 0,
-	// downloadLimit: 1024 * 1024 * 4,
-});
-const downloading = new Map();
-
-async function addTorrent(torrentUrl, dir) {
-	const torrentOpts = {
-		maxWebConns: 1024,
-		announce: announceList,
-		path: path.join(rootPath, dir),
-	};
-	let r;
-	if (torrentUrl.startsWith("http"))
-		r = await axios
-			.get(torrentUrl, { proxy: axiosProxy, responseType: "arraybuffer" })
-			.then((u) => u.data);
-	else if (torrentUrl.startsWith("magnet")) r = torrentUrl;
-	else throw new Error("unsupported torrent type");
-	const torrent = client.add(r, torrentOpts, (torrent) => {
-		for (const file of torrent.files) {
-			console.log(">>>>>>>>started downloading", file.path);
-			downloading.set(file.path, { file, pl: torrent.pieceLength });
-		}
-		torrent.on("done", () => {
-			for (const file of torrent.files) {
-				console.log(">>>>>>>>downloading completed", file.path);
-				downloading.delete(file.path);
-			}
-			torrent.destroy();
-		});
-	});
-	torrent.on("error", (err) => {
-		console.log(err.message);
-	});
-}
+import { rootPath, axiosProxy, announceList, extMatcher } from "./config.js";
 
 app.register(fastify_static, {
 	root: path.join(path.dirname(__filename), "fe/dist/assets"),
@@ -89,63 +41,22 @@ app.register(async (app) => {
 	});
 });
 
-app.post("/add/torrent", async (req, res) => {
-	const { i, name } = req.body;
-	addTorrent(i, name);
-});
-app.get("/add/browse", async (req, res) => {
-	const data = await axios
-		.get(browseSource, { proxy: axiosProxy })
-		.then((u) => u.data);
-	const result = await rssParser.parseString(data);
-	return res.send(
-		result.items.map((u) => {
-			const parsed = parseTitle(u.title);
-			u.episode = parsed.episode;
-			u.name = parsed.name;
-			return u;
-		})
-	);
-});
-app.post("/add/search", async (req, res) => {
-	const { s } = req.body;
-	const data = await axios
-		.get(
-			"https://share.dmhy.org/topics/rss/rss.xml?keyword=" +
-				encodeURIComponent(s) +
-				"&sort_id=0&team_id=816&order=date-desc",
-			{ proxy: axiosProxy }
-		)
-		.then((u) => u.data);
-	const result = await rssParser.parseString(data);
-	return res.send(
-		result.items.map((u) => {
-			const parsed = parseTitle(u.title);
-			u.episode = parsed.episode;
-			u.name = parsed.name;
-			return u;
-		})
-	);
-});
 app.post("/scandir", async (req, res) => {
 	const { path } = req.body;
 	return res.send(getFiles(path));
 });
-app.get("/speed", async (req, res) => {
-	return res.send({ down: client.downloadSpeed, up: client.uploadSpeed });
-});
 
-app.get("/video/:dir/:ep", async (req, res) => {
+app.get("/video/*", async (req, res) => {
 	res.header("Accept-Ranges", "bytes");
 
-	const { dir, ep } = req.params;
+	const ep = decodeURI(req.url.slice(7));
 
-	const r = path.resolve(rootPath, dir, ep);
+	const r = path.resolve(rootPath, ep);
 	const { file = null, pl = Infinity } = downloading.get(ep) ?? {};
 
 	if (!file && !fs.existsSync(r)) return res.callNotFound();
 
-	res.header("Content-Type", file ? file.type : mime.getType(r));
+	res.type(file ? file.type : mime.getType(r));
 	if (!req.headers.range) {
 		const stream = fs.createReadStream(r);
 		return res.send(stream);
@@ -170,9 +81,9 @@ app.get("/video/:dir/:ep", async (req, res) => {
 });
 
 app.register(danmakuRoute, { prefix: "danmaku/v3" });
+app.register(addTorrentRoute, { prefix: "add" });
 
-app.get("/*", async (req, res) => {
-	res.header("Content-Type", "text/html");
-	return res.send(fs.createReadStream("./fe/dist/index.html"));
+app.get("/*", (req, res) => {
+	res.type("text/html").send(fs.createReadStream("./fe/dist/index.html"));
 });
 app.listen({ host: "0.0.0.0", port: 3000 });
