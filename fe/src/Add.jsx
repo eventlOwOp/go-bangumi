@@ -39,6 +39,7 @@ export default function Add() {
 	if (s.query.s) {
 		onMount(() => {
 			document.forms["search"]["text"].value = s.query.s;
+			document.forms["addTorrent"]["dir"] = s.query.s;
 			axios.post("/add/search", { s: s.query.s }).then((u) => {
 				setRss(u.data);
 				enablePopover();
@@ -120,7 +121,7 @@ export default function Add() {
 											axios
 												.post("/add/torrent", {
 													i: u.enclosure.url,
-													name: escapeName(u.name),
+													name: escapeName(u.rawName),
 												})
 												.then(() => {
 													Swal.fire({

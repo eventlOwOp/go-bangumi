@@ -25,6 +25,7 @@ export default function Sidebar(props) {
 							active: u.file === video(),
 						}}
 						on:click={() => setVideo(u.file)}
+						title={u.name}
 					>
 						{u.name}
 					</span>

@@ -5,3 +5,4 @@ fe/pnpm-lock.yaml
 fe/deploy.bat
 deploy.bat
 resources.txt
+config.js
