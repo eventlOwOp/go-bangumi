@@ -1,4 +1,4 @@
-export const rootPath = "<path-to-the-directory-to-save-downloadings>";
+export const rootPath = "D:\\BTPlayer";
 export const axiosProxy = {
 	// to access danmu or source
 	protocol: "http",

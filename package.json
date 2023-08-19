@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/compress": "^6.4.0",
     "@fastify/static": "^6.10.2",
     "@fastify/websocket": "^8.2.0",
     "axios": "^1.4.0",

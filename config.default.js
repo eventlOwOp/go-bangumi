@@ -1,4 +1,4 @@
-export const rootPath = "D:\\BTPlayer";
+export const rootPath = "<path-to-the-directory-to-save-downloadings>";
 export const axiosProxy = {
 	protocol: "http",
 	host: "localhost",

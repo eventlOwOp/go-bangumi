@@ -1,10 +1,6 @@
 #!/usr/bin/env node
 
-// Require the framework and instantiate it
-import fastify from "fastify";
-import fastify_static from "@fastify/static";
-import fastify_websocket from "@fastify/websocket";
-const app = fastify({
+const app = (await import("fastify")).default({
 	logger: {
 		level: "error",
 	},
@@ -24,13 +20,15 @@ const __filename = fileURLToPath(import.meta.url);
 
 import { rootPath, axiosProxy, announceList, extMatcher } from "./config.js";
 
-app.register(fastify_static, {
+app.register((await import("@fastify/compress")).default);
+
+app.register((await import("@fastify/static")).default, {
 	root: path.join(path.dirname(__filename), "fe/dist/assets"),
 	prefix: "/assets/",
 	decorateReply: false,
 });
+app.register((await import("@fastify/websocket")).default);
 
-app.register(fastify_websocket);
 const connpool = new Set();
 app.register(async (app) => {
 	app.get("/ws", { websocket: true }, async (conn, req) => {
