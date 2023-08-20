@@ -27,7 +27,7 @@ async function rssRawConvert(data) {
 		const parsed = parseTitle(u.title);
 		return {
 			title: converter.convert(u.title),
-			rawTitle: u.title,
+			rawTitle: parsed.name,
 			enclosure: u.enclosure,
 			pubDate: u.pubDate,
 			episode: converter.convert(parsed.episode),

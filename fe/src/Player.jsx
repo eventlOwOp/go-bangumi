@@ -44,6 +44,7 @@ export default function App() {
 			}
 		})();
 
+		Artplayer.CONTROL_HIDE_TIME = 1000;
 		const art = new Artplayer({
 			container: document.getElementById("artplayer"),
 			url: `/video/${path}/${encodeURI(episode())}`,
@@ -53,13 +54,13 @@ export default function App() {
 			fullscreenWeb: true,
 			miniProgressBar: true,
 			pip: true,
-			setting: true,
+			hotkey: false,
 			useSSR: true,
 
 			icons: {
-				loading: `<img src="${ploading}">`,
-				state: `<img width="150" heigth="150" src="${state}">`,
-				indicator: `<img width="16" heigth="16" src="${indicator}">`,
+				loading: `<div style="display:flex;flex-direction:column;align-items:center;"><img src="${ploading}" width="24" height="24"/><span style="font-style:normal;">Loading</span></div>`,
+				state: `<img width="150" heigth="150" src="${state}"/>`,
+				indicator: `<img width="16" heigth="16" src="${indicator}"/>`,
 			},
 		});
 		art.on("resize", () => {
@@ -69,6 +70,7 @@ export default function App() {
 			art.currentTime && localStorage.setItem(episode(), art.currentTime);
 		});
 		art.on("video:ended", () => {
+			localStorage.removeItem(episode());
 			const nextVideo = getNextVideo();
 			if (nextVideo) setEpisode(nextVideo);
 		});
@@ -77,11 +79,11 @@ export default function App() {
 			localStorage.setItem(path, episode());
 			await art.switchUrl(`/video/${path}/${encodeURI(episode())}`);
 			art.pause();
-			art.currentTime = localStorage.getItem(episode()) ?? 0;
+			initTime();
 		});
 		window.art = art;
 
-		document.addEventListener("keypress", async (event) => {
+		document.addEventListener("keydown", async (event) => {
 			if (["TEXTAREA", "INPUT"].includes(event.target.tagName)) return;
 			if (event.key === "f") {
 				event.preventDefault();
@@ -91,8 +93,20 @@ export default function App() {
 				art.toggle();
 			} else if (event.key === "k") {
 				event.preventDefault();
-				art.forward(80);
-			} else if (/\d/.test(event.key)) {
+				art.forward = 80;
+			} else if (event.key === "ArrowRight") {
+				event.preventDefault();
+				art.forward = Artplayer.SEEK_STEP;
+			} else if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				art.backward = Artplayer.SEEK_STEP;
+			} else if (event.key === "ArrowUp") {
+				event.preventDefault();
+				art.volume += Artplayer.VOLUME_STEP;
+			} else if (event.key === "ArrowDown") {
+				event.preventDefault();
+				art.volume -= Artplayer.VOLUME_STEP;
+			} else if (/^\d$/.test(event.key)) {
 				event.preventDefault();
 				const speed = parseInt(event.key);
 				if (speed) art.playbackRate = speed;
@@ -107,8 +121,6 @@ export default function App() {
 		if (++id < filelist().length) nextvideo = filelist()[id].file;
 		return nextvideo;
 	}
-
-	console.log(Artplayer.html);
 
 	return (
 		<div class="container-md mt-4" id="container">
