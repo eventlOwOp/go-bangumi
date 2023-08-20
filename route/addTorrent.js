@@ -27,11 +27,11 @@ async function rssRawConvert(data) {
 		const parsed = parseTitle(u.title);
 		return {
 			title: converter.convert(u.title),
-			rawTitle: parsed.name,
 			enclosure: u.enclosure,
 			pubDate: u.pubDate,
 			episode: converter.convert(parsed.episode),
 			name: converter.convert(parsed.name),
+			rawName: parsed.name,
 		};
 	});
 }
