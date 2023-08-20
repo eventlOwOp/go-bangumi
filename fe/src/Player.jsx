@@ -1,8 +1,12 @@
 import { createSignal, createEffect, onMount } from "solid-js";
 import Sidebar from "./component/sidebar";
-import DPlayer from "dplayer";
 import { useParams } from "@solidjs/router";
 import axios from "axios";
+
+import state from "./assets/img/state.svg";
+import indicator from "./assets/img/indicator.svg";
+import ploading from "./assets/img/ploading.svg";
+import Artplayer from "artplayer";
 
 function replaceHash(hash) {
 	const baseUrl = location.href.split("#")[0];
@@ -23,75 +27,78 @@ export default function App() {
 	const [episode, setEpisode] = createSignal(ep);
 
 	onMount(() => {
+		function initTime() {
+			art.currentTime = localStorage.getItem(episode()) ?? 0;
+		}
+
 		(async function () {
 			await scandirPromise;
 			if (ep === null) {
 				setEpisode(filelist()[0].file);
-				initDplayer();
+				initTime();
 			}
 			if (filelist().every((u) => u.file != ep)) {
-				localStorage.removeItem(episode());
 				setEpisode(filelist()[0].file);
-				initDplayer();
+				localStorage.removeItem(episode());
+				initTime();
 			}
 		})();
-		const dp = new DPlayer({
-			container: document.getElementById("dplayer"),
+
+		const art = new Artplayer({
+			container: document.getElementById("artplayer"),
+			url: `/video/${path}/${encodeURI(episode())}`,
 			screenshot: true,
-			video: {
-				url: `/video/${path}/${encodeURI(episode())}`,
+			theme: "#23ade5",
+			fullscreen: true,
+			fullscreenWeb: true,
+			miniProgressBar: true,
+			pip: true,
+			setting: true,
+			useSSR: true,
+
+			icons: {
+				loading: `<img src="${ploading}">`,
+				state: `<img width="150" heigth="150" src="${state}">`,
+				indicator: `<img width="16" heigth="16" src="${indicator}">`,
 			},
-			// danmaku: {
-			//     id: '34055',
-			//     api: 'http://localhost:3000/danmaku/',
-			//     // bottom: '15%',
-			//     // unlimited: true,
-			//     // speedRate: 0.5,
-			// },
 		});
+		art.on("resize", () => {
+			art.autoHeight();
+		});
+		art.on("video:timeupdate", () => {
+			art.currentTime && localStorage.setItem(episode(), art.currentTime);
+		});
+		art.on("video:ended", () => {
+			const nextVideo = getNextVideo();
+			if (nextVideo) setEpisode(nextVideo);
+		});
+		createEffect(async () => {
+			replaceHash(episode());
+			localStorage.setItem(path, episode());
+			await art.switchUrl(`/video/${path}/${encodeURI(episode())}`);
+			art.pause();
+			art.currentTime = localStorage.getItem(episode()) ?? 0;
+		});
+		window.art = art;
+
 		document.addEventListener("keypress", async (event) => {
-			if (["TEXTAREA", "INPUT"].includes(event.target.tagpath)) return;
+			if (["TEXTAREA", "INPUT"].includes(event.target.tagName)) return;
 			if (event.key === "f") {
 				event.preventDefault();
-				if (dp.video.hasAttribute("fullscreen")) {
-					dp.fullScreen.cancel();
-					dp.video.removeAttribute("fullscreen");
-				} else {
-					dp.fullScreen.request();
-					dp.video.setAttribute("fullscreen", "");
-				}
+				art.fullscreenWebToggle();
+			} else if (event.key === " ") {
+				event.preventDefault();
+				art.toggle();
 			} else if (event.key === "k") {
 				event.preventDefault();
-				dp.seek(dp.video.currentTime + 80);
+				art.forward(80);
 			} else if (/\d/.test(event.key)) {
 				event.preventDefault();
 				const speed = parseInt(event.key);
-				if (speed) dp.video.playbackRate = speed;
+				if (speed) art.playbackRate = speed;
 			}
 		});
-		if (ep) initDplayer();
-
-		function initDplayer() {
-			dp.video.currentTime = localStorage.getItem(episode()) ?? 0;
-			dp.video.ontimeupdate = async () => {
-				if (dp.video.currentTime)
-					localStorage.setItem(episode(), dp.video.currentTime);
-			};
-			dp.video.onended = async () => {
-				localStorage.removeItem(episode());
-				dp.video.currentTime = 0;
-				const nextVideo = getNextVideo();
-				if (nextVideo) setEpisode(nextVideo);
-			};
-			createEffect(() => {
-				dp.switchVideo({
-					url: `/video/${path}/${encodeURI(episode())}`,
-				});
-				dp.video.currentTime = localStorage.getItem(episode()) ?? 0;
-				replaceHash(episode());
-				localStorage.setItem(path, episode());
-			});
-		}
+		if (ep) initTime();
 	});
 	function getNextVideo() {
 		let id = 0;
@@ -101,11 +108,13 @@ export default function App() {
 		return nextvideo;
 	}
 
+	console.log(Artplayer.html);
+
 	return (
 		<div class="container-md mt-4" id="container">
 			<div class="row mb-4">
 				<div class="col-md-10 col-sm-12 mb-3 player-wrapper">
-					<div id="dplayer"></div>
+					<div id="artplayer" innerHTML={Artplayer.html}></div>
 				</div>
 				<div
 					class="col-md-2 col-sm-12 mb-3 sidebar-wrapper"

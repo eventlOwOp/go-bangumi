@@ -13,6 +13,7 @@
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "@solidjs/router": "^0.8.3",
+    "artplayer": "^5.0.9",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.1",
     "dplayer": "^1.27.1",
