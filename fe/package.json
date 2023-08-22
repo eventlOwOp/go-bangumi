@@ -14,6 +14,7 @@
     "@popperjs/core": "^2.11.8",
     "@solidjs/router": "^0.8.3",
     "artplayer": "^5.0.9",
+    "artplayer-plugin-danmuku": "^5.0.1",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.1",
     "moment": "^2.29.4",

@@ -1,12 +1,15 @@
-import { createSignal, createEffect, onMount } from "solid-js";
-import Sidebar from "./component/sidebar";
+import { createSignal, createEffect, onMount, For } from "solid-js";
 import { useParams } from "@solidjs/router";
 import axios from "axios";
 
 import state from "./assets/img/state.svg";
 import indicator from "./assets/img/indicator.svg";
 import ploading from "./assets/img/ploading.svg";
+import poster from "./assets/img/poster.jpg";
 import Artplayer from "artplayer";
+
+import "./css/player.scss";
+import "./css/sidebar.scss";
 
 function replaceHash(hash) {
 	const baseUrl = location.href.split("#")[0];
@@ -14,6 +17,8 @@ function replaceHash(hash) {
 }
 
 export default function App() {
+	Artplayer.CONTROL_HIDE_TIME = 1000;
+
 	let { path } = useParams();
 	path = decodeURI(path);
 
@@ -44,10 +49,9 @@ export default function App() {
 			}
 		})();
 
-		Artplayer.CONTROL_HIDE_TIME = 1000;
-		const art = new Artplayer({
+		window.art = new Artplayer({
 			container: document.getElementById("artplayer"),
-			url: `/video/${path}/${encodeURI(episode())}`,
+			url: `/video/${encodeURI(path)}/${encodeURI(episode())}`,
 			screenshot: true,
 			theme: "#23ade5",
 			fullscreen: true,
@@ -56,6 +60,7 @@ export default function App() {
 			pip: true,
 			hotkey: false,
 			useSSR: true,
+			poster: poster,
 
 			icons: {
 				loading: `<div style="display:flex;flex-direction:column;align-items:center;"><img src="${ploading}" width="24" height="24"/><span style="font-style:normal;">Loading</span></div>`,
@@ -81,7 +86,6 @@ export default function App() {
 			art.pause();
 			initTime();
 		});
-		window.art = art;
 
 		document.addEventListener("keydown", async (event) => {
 			if (["TEXTAREA", "INPUT"].includes(event.target.tagName)) return;
@@ -121,10 +125,19 @@ export default function App() {
 		if (++id < filelist().length) nextvideo = filelist()[id].file;
 		return nextvideo;
 	}
+	async function togetherStart() {
+		const id = await axios
+			.post("/together/add", {
+				url: `/video/${encodeURI(path)}/${encodeURI(episode())}`,
+				name: `${path} ${episode()}`,
+			})
+			.then((u) => u.data.id);
+		location.href = `/together/${id}`;
+	}
 
 	return (
 		<div class="container-md mt-4" id="container">
-			<div class="row mb-4">
+			<div class="row">
 				<div class="col-md-10 col-sm-12 mb-3 player-wrapper">
 					<div id="artplayer" innerHTML={Artplayer.html}></div>
 				</div>
@@ -132,11 +145,41 @@ export default function App() {
 					class="col-md-2 col-sm-12 mb-3 sidebar-wrapper"
 					style="position: relative"
 				>
-					<Sidebar
-						file={filelist}
-						videoSignal={[episode, setEpisode]}
-						name={path}
-					/>
+					<div class="sidebar">
+						<div class="item-control-wrap">
+							<span
+								class="item item-control"
+								on:click={() => (location.href = "/")}
+							>
+								返回
+							</span>
+							<span
+								class="item item-control"
+								on:click={() =>
+									(location.href = "/add?s=" + encodeURIComponent(path))
+								}
+							>
+								更新
+							</span>
+							<span class="item item-control" on:click={togetherStart}>
+								一起看
+							</span>
+						</div>
+						<For each={filelist()}>
+							{(u) => (
+								<span
+									classList={{
+										item: true,
+										active: u.file === episode(),
+									}}
+									on:click={() => setEpisode(u.file)}
+									title={u.name}
+								>
+									{u.name}
+								</span>
+							)}
+						</For>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -8,6 +8,7 @@ const app = (await import("fastify")).default({
 
 import danmakuRoute from "./route/danmaku.js";
 import addTorrentRoute, { downloading } from "./route/addTorrent.js";
+import togetherRoute from "./route/together.js";
 
 import fs from "fs";
 import path from "path";
@@ -18,25 +19,24 @@ import getFiles from "./lib/getFiles.js";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 
+// import { renderToStringAsync } from "solid-js/web";
+
 import { rootPath, axiosProxy, announceList, extMatcher } from "./config.js";
 
+app.register((await import("@fastify/cookie")).default);
+app.register((await import("@fastify/session")).default, {
+	secret: "cf4456458bfc4216b4dd0167ffe11783",
+	cookie: {
+		secure: false,
+	},
+});
 app.register((await import("@fastify/compress")).default);
+app.register((await import("@fastify/websocket")).default);
 
 app.register((await import("@fastify/static")).default, {
 	root: path.join(path.dirname(__filename), "fe/dist/assets"),
 	prefix: "/assets/",
 	decorateReply: false,
-});
-app.register((await import("@fastify/websocket")).default);
-
-const connpool = new Set();
-app.register(async (app) => {
-	app.get("/ws", { websocket: true }, async (conn, req) => {
-		connpool.add(conn);
-		conn.socket.on("close", () => {
-			connpool.delete(conn);
-		});
-	});
 });
 
 app.post("/scandir", async (req, res) => {
@@ -80,8 +80,26 @@ app.get("/video/*", async (req, res) => {
 
 app.register(danmakuRoute, { prefix: "danmaku/v3" });
 app.register(addTorrentRoute, { prefix: "add" });
+app.register(togetherRoute, { prefix: "together" });
+
+// await app.register((await import("@fastify/vite")).default, {
+// 	dev: process.argv.includes("--dev"),
+// 	root: import.meta.url,
+// 	createRenderFunction({ appRouter }) {
+// 		return async () => {
+// 			return {
+// 				element: await renderToStringAsync(appRouter()),
+// 			};
+// 		};
+// 	},
+// });
 
 app.get("/*", (req, res) => {
 	res.type("text/html").send(fs.createReadStream("./fe/dist/index.html"));
 });
-app.listen({ host: "0.0.0.0", port: 3000 });
+// app.get("/*", async (req, res) => {
+// 	return res.html(await res.render());
+// });
+// await app.vite.ready();
+
+await app.listen({ host: "0.0.0.0", port: 3000 });
