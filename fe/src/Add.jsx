@@ -1,10 +1,15 @@
-import { createSignal, createEffect, onMount } from "solid-js";
+import {
+	createSignal,
+	createEffect,
+	onMount,
+	createReaction,
+	createResource,
+} from "solid-js";
 import MagnetInput from "./component/magnetInput";
 import { useLocation } from "@solidjs/router";
 import Swal from "sweetalert2";
 import axios from "axios";
 import moment from "moment";
-import { Popover } from "bootstrap";
 
 function escapeName(name) {
 	name.replaceAll(/[\\|\/|\:|\*|\?|\||"|<|>]/g, "");
@@ -13,7 +18,8 @@ function escapeName(name) {
 	return name.slice(0, i).trim();
 }
 
-function enablePopover() {
+async function enablePopover() {
+	const Popover = (await import("bootstrap")).Popover;
 	document
 		.querySelectorAll('[data-bs-toggle="popover"]')
 		.forEach((u) => new Popover(u));

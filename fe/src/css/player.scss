@@ -1,0 +1,21 @@
+@import "bootstrap/scss/bootstrap";
+
+@include media-breakpoint-down(md) {
+    div.player-wrapper {
+        --bs-gutter-y: 0;
+        --bs-gutter-x: 0;
+    }
+
+    div.player-wrapper {
+        margin-bottom: 0 !important;
+    }
+
+    div#container {
+        margin-top: 0 !important;
+    }
+}
+
+div.art-layer-danmuku-emitter {
+    padding: 4px 10px 5px 10px;
+    background-color: black;
+}

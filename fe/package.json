@@ -12,18 +12,19 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "@solidjs/router": "^0.8.3",
+    "@solidjs/router": "^0.8.4",
     "artplayer": "^5.0.9",
-    "axios": "^1.4.0",
-    "bootstrap": "^5.3.1",
-    "moment": "^2.29.4",
-    "sass": "^1.65.1",
-    "solid-js": "^1.7.8",
-    "sweetalert2": "^11.7.22"
+    "artplayer-plugin-danmuku": "^5.0.1",
+    "axios": "^1.7.2",
+    "bootstrap": "^5.3.3",
+    "moment": "^2.30.1",
+    "sass": "^1.77.8",
+    "solid-js": "^1.8.18",
+    "sweetalert2": "^11.12.2"
   },
   "devDependencies": {
-    "@types/dplayer": "^1.25.2",
-    "vite": "^4.4.5",
-    "vite-plugin-solid": "^2.7.0"
+    "@types/dplayer": "^1.25.5",
+    "vite": "^4.5.3",
+    "vite-plugin-solid": "^2.10.2"
   }
 }

@@ -52,3 +52,10 @@ export const announceList = [
 	"udp://tr.bangumi.moe:6969/announce",
 ];
 export const extMatcher = /\.(mp4|mkv|mov)$/;
+
+export const alist = {
+	enable: true,
+	base_url: "http://192.168.1.114:5244",
+	username: "admin",
+	password: "pass",
+};

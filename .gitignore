@@ -1,7 +1,5 @@
 node_modules/
-pnpm-lock.yaml
 fe/node_modules/
-fe/pnpm-lock.yaml
 fe/deploy.bat
 deploy.bat
 resources.txt

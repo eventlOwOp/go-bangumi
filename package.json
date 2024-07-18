@@ -4,15 +4,24 @@
   "description": "",
   "main": "server.js",
   "type": "module",
-  "bin": {
-    "player": "./server.js"
+  "scripts": {
+    "dev": "vite",
+    "watch": "vite build --watch",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build --outDir dist/client --ssrManifest",
+    "build:server": "vite build --outDir dist/server --ssr ./index.js",
+    "preview": "vite preview",
+    "deploy": "npm run build && deploy.bat"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@fastify/compress": "^6.4.0",
+    "@fastify/cookie": "^9.0.4",
+    "@fastify/session": "^10.4.0",
     "@fastify/static": "^6.10.2",
+    "@fastify/vite": "^4.0.0",
     "@fastify/websocket": "^8.2.0",
     "axios": "^1.4.0",
     "diff": "^5.1.0",
